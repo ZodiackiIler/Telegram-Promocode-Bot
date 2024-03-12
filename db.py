@@ -23,6 +23,7 @@ class MySQLDatabase:
                 promo_code       VARCHAR(255) NOT NULL,
                 promocode_bal    VARCHAR(255) NOT NULL,
                 promocode_count  VARCHAR(255) NOT NULL,
+                promocode_coin   TEXT,
                 promocode_desc   TEXT,
                 promocode_active VARCHAR(255) NOT NULL,
                 activate_enable  VARCHAR(5) DEFAULT 'True'
@@ -70,7 +71,7 @@ class MySQLDatabase:
         query = "SELECT * FROM promo_exists WHERE promo_code = %s"
         self.cursor.execute(query, (promocode_id,))
         result = self.cursor.fetchall()
-        return result[0][6]
+        return result[0][7]
     
     def user_activates(self, user_id, promocode_id):
         query = "SELECT * FROM users WHERE user_id = %s AND promocode = %s"
@@ -78,15 +79,14 @@ class MySQLDatabase:
         result = self.cursor.fetchall()
         return bool(result)  
 
-
     def add_active_promocode(self, user_id, username, promocode_id):
         query = "INSERT INTO users (user_id, username, promocode) VALUES (%s, %s, %s)"
         self.cursor.execute(query, (user_id, username, promocode_id))
         self.connection.commit()
 
-    def add_promocode(self, promocode_id, balance, count, description):
-        query = "INSERT INTO promo_exists (promo_code, promocode_bal, promocode_count, promocode_desc, promocode_active) VALUES (%s, %s, %s, %s, %s)"
-        self.cursor.execute(query, (promocode_id, balance, count, description, '0'))
+    def add_promocode(self, promocode_id, balance, coins, count, description):
+        query = "INSERT INTO promo_exists (promo_code, promocode_bal, promocode_coins, promocode_count, promocode_desc, promocode_active) VALUES (%s, %s, %s, %s, %s)"
+        self.cursor.execute(query, (promocode_id, balance, coins, count, description, '0'))
         self.connection.commit()
 
     def deactivate_promocode(self, promocode_id):
@@ -103,7 +103,7 @@ class MySQLDatabase:
         query = "SELECT * FROM promo_exists WHERE promo_code = %s"
         self.cursor.execute(query, (promocode_id,))
         result = self.cursor.fetchall()
-        if result[0][5] >= result[0][2]:
+        if result[0][6] >= result[0][3]:
             query = "UPDATE promo_exists SET activate_enable = 'False' WHERE promo_code = %s"
             self.cursor.execute(query, (promocode_id,))
             self.connection.commit()
@@ -129,6 +129,7 @@ class SQLiteDatabase:
                 promo_code       TEXT    NOT NULL,
                 promocode_bal    TEXT    NOT NULL,
                 promocode_count  TEXT    NOT NULL,
+                promocode_coin   TEXT,
                 promocode_desc   TEXT,
                 promocode_active TEXT    NOT NULL,
                 activate_enable  TEXT    DEFAULT 'True' 
@@ -174,7 +175,7 @@ class SQLiteDatabase:
         query = "SELECT * FROM promo_exists WHERE promo_code = ?"
         self.cursor.execute(query, (promocode_id,))
         result = self.cursor.fetchall()
-        return result[0][6]
+        return result[0][7]
     
     def user_activates(self, user_id, promocode_id):
         query = "SELECT * FROM users WHERE user_id = ? AND promocode = ?"
@@ -187,9 +188,9 @@ class SQLiteDatabase:
         self.cursor.execute(query, (user_id, username, promocode_id))
         self.connection.commit()
 
-    def add_promocode(self, promocode_id, balance, count, description):
-        query = "INSERT INTO promo_exists (promo_code, promocode_bal, promocode_count, promocode_desc, promocode_active) VALUES (?, ?, ?, ?, ?)"
-        self.cursor.execute(query, (promocode_id, balance, count, description, '0'))
+    def add_promocode(self, promocode_id, balance, coins, count, description):
+        query = "INSERT INTO promo_exists (promo_code, promocode_bal, promocode_coins, promocode_count, promocode_desc, promocode_active) VALUES (?, ?, ?, ?, ?, ?)"
+        self.cursor.execute(query, (promocode_id, balance, coins, count, description, '0'))
         self.connection.commit()
 
     def deactivate_promocode(self, promocode_id):
@@ -206,7 +207,7 @@ class SQLiteDatabase:
         query = "SELECT * FROM promo_exists WHERE promo_code = ?"
         self.cursor.execute(query, (promocode_id,))
         result = self.cursor.fetchall()
-        if result[0][5] >= result[0][2]:
+        if result[0][6] >= result[0][3]:
             query = "UPDATE promo_exists SET activate_enable = 'False' WHERE promo_code = ?"
             self.cursor.execute(query, (promocode_id,))
             self.connection.commit()
